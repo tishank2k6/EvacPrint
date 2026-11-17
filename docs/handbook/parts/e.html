@@ -1,0 +1,148 @@
+
+<!-- =============================================================== 12. SCRIPT -->
+<section class="chapter" id="c12">
+  <div class="ch-head" data-short="12 · Script">
+    <div class="ch-num">Chapter 12</div>
+    <h1>Two-person presentation script</h1>
+    <p>About 9 minutes. Synchronized with the real interface. Both presenters speak in every scene except the demo halves, where one speaks while the other drives.</p>
+  </div>
+
+  <div class="legend-row">
+    <span><i class="sw" style="background:var(--teal)"></i><b>TISHANK</b> — Team Leader</span>
+    <span><i class="sw" style="background:var(--amber)"></i><b>NAVYA</b> — Team Member</span>
+    <span><i class="sw" style="background:#fff;border:0.3mm dashed #c9c2b5"></i>[CUE] actions and screen</span>
+    <span><i class="sw" style="background:#fff;border:0.3mm dashed #d9b7b4"></i>[PAUSE]</span>
+  </div>
+
+  <table class="compact">
+    <thead><tr><th>Scene</th><th>Main speaker(s)</th><th>At the laptop</th><th class="num">Time</th></tr></thead>
+    <tbody>
+      <tr><td>1 Opening</td><td>Tishank → Navya</td><td>—</td><td class="num">0:45</td></tr>
+      <tr><td>2 Problem</td><td>Navya → Tishank</td><td>—</td><td class="num">1:00</td></tr>
+      <tr><td>3 Solution</td><td>Tishank → Navya</td><td>Navya (Overview tab)</td><td class="num">0:45</td></tr>
+      <tr><td>4A Demo: simulation</td><td>Tishank</td><td>Navya</td><td class="num">2:00</td></tr>
+      <tr><td>4B Demo: recommendations, own venue</td><td>Navya</td><td>Tishank</td><td class="num">2:00</td></tr>
+      <tr><td>5 Architecture &amp; tech</td><td>Navya → Tishank</td><td>—</td><td class="num">1:15</td></tr>
+      <tr><td>6 Innovation</td><td>Tishank</td><td>—</td><td class="num">0:40</td></tr>
+      <tr><td>7 Applications &amp; future</td><td>Navya</td><td>—</td><td class="num">0:40</td></tr>
+      <tr><td>8 Conclusion</td><td>Tishank → Navya → both</td><td>—</td><td class="num">0:30</td></tr>
+      <tr><td><b>Total</b></td><td></td><td></td><td class="num"><b>≈ 9:35</b></td></tr>
+    </tbody>
+  </table>
+  <p class="small muted">Preparation note: stand on either side of the laptop so swapping who drives takes two seconds. Speak to the judges, not to the screen. Words in <span style="background:#fff;padding:0 1mm;font-weight:600">highlight</span> are the lines to stress.</p>
+
+  <!-- SCENE 1 -->
+  <div class="scene" style="break-before:auto;margin-top:6mm">
+    <div class="scene-h"><h2>Scene 1 — Opening &amp; introduction</h2><span class="time">0:45</span></div>
+    <div class="cue"><b>SCREEN:</b> Tab ① Overview — "Every Second Matters. Every Exit Counts." with the live 3D hall.</div>
+    <div class="line t"><span class="who">Tishank</span><div class="speech">Good morning, respected judges. I am Tishank Goswami, team leader, and this is Navya Raghav. Our project is <span class="hl">EvacPrint — a digital blueprint for crowd evacuation and safer venues.</span></div></div>
+    <div class="line n"><span class="who">Navya</span><div class="speech">Let me start with a question. We are sitting in Seminar Hall 406 right now. If the fire alarm rang this second — how long would it take for everyone in this room to get out? And which door would jam first?</div></div>
+    <div class="cue pause">[PAUSE 2 s — let the question land]</div>
+    <div class="line t"><span class="who">Tishank</span><div class="speech">Nobody can answer that from the evacuation map on the wall. <span class="hl">EvacPrint can — and it can tell you what to change to make it faster.</span> Everything you will see today is computed live in the browser; there is no pre-recorded video.</div></div>
+  </div>
+
+  <!-- SCENE 2 -->
+  <div class="scene" style="break-before:auto;margin-top:6mm">
+    <div class="scene-h"><h2>Scene 2 — Problem statement</h2><span class="time">1:00</span></div>
+    <div class="line n"><span class="who">Navya</span><div class="speech">Evacuation plans today are static drawings with green arrows. They show where to go, but not how long it takes, where the crowd will get stuck, or what happens if one exit is blocked by stored chairs — which happens more often than we like to admit.</div></div>
+    <div class="line n"><span class="who">Navya</span><div class="speech">And crowds don't behave like arrows. A one-metre door can let through only about <span class="hl">1.33 people per second.</span> When people arrive faster than that, a queue forms, the crowd gets denser, and in a dense crowd everyone walks slower. Those problems are invisible on paper.</div></div>
+    <div class="line t"><span class="who">Tishank</span><div class="speech">Real drills help, but they are rare, they cost time, and you cannot safely test "what if this door is blocked" or "what if we allow 400 people". Professional evacuation software exists, but it is expensive and made for specialists.</div></div>
+    <div class="line t"><span class="who">Tishank</span><div class="speech">So colleges, auditoriums and event organisers make decisions about doors, seating and crowd size <span class="hl">without any way to measure their effect on safety.</span> That is the gap we are addressing.</div></div>
+  </div>
+
+  <!-- SCENE 3 -->
+  <div class="scene" style="break-before:auto;margin-top:6mm">
+    <div class="scene-h"><h2>Scene 3 — Introducing the solution</h2><span class="time">0:45</span></div>
+    <div class="cue"><b>NAVYA SCROLLS:</b> Overview → the 7-step story → stops at the "Four scenarios, simulated in your browser right now" benchmark.</div>
+    <div class="line t"><span class="who">Tishank</span><div class="speech">EvacPrint does four things: <span class="hl">Simulate, predict, optimize, protect.</span> It turns a venue into a grid of half-metre squares, fills it with virtual people, sounds a virtual alarm, and measures what happens. Then it tries design changes by itself and tells you which ones actually help.</div></div>
+    <div class="line n"><span class="who">Navya</span><div class="speech">These four cards were not typed in. When this section scrolled into view, the browser just ran all four scenarios for Hall 406 to completion — a normal evacuation, a blocked exit, a 400-person crowd and a mixed-mobility audience. Our goal is simple: give anyone responsible for a venue a fast, free and honest way to answer <span class="hl">how long, where it jams, and what to change.</span></div></div>
+  </div>
+
+  <!-- SCENE 4A -->
+  <div class="scene">
+    <div class="scene-h"><h2>Scene 4A — Live demo: the simulation</h2><span class="time">2:00</span></div>
+    <div class="cue"><b>NAVYA CLICKS:</b> Tab ② Simulator (Normal evacuation selected, Split view, 4×) → <b>Run</b>.</div>
+    <div class="line t"><span class="who">Tishank</span><div class="speech">This is our model of Seminar Hall 406 — 340 seats in three blocks, a stage, three one-metre doors to the corridor, and three final exits. On the left, the 2D plan; on the right, the same people in 3D. Two hundred people are seated.</div></div>
+    <div class="cue"><b>SCREEN:</b> grey figures sitting for the first 10–30 simulated seconds.</div>
+    <div class="line t"><span class="who">Tishank</span><div class="speech">The grey people are still reacting to the alarm — each one has their own reaction time, between 10 and 30 seconds. Now they start walking. Every person is an independent agent with their own speed and size, recalculated every tenth of a second.</div></div>
+    <div class="cue"><b>SCREEN:</b> red queues forming at Door C (top right) and Door A (bottom left); B1, B2 markers appear.</div>
+    <div class="line t"><span class="who">Tishank</span><div class="speech">See the red? Those people are queuing. Each door lets only 1.33 people per second through, so a queue bends into an arch. The heatmap shows density — red means above <span class="hl">2.15 people per square metre</span>, where walking speed has already dropped by more than half. EvacPrint detects these zones automatically: B1 is the Door C approach.</div></div>
+    <div class="cue pause">[PAUSE — let the judges watch the queues for 3–4 seconds]</div>
+    <div class="cue"><b>SCREEN:</b> run completes — Evacuation time 93.6 s; Exit utilisation shows Door C · 78.</div>
+    <div class="line t"><span class="who">Tishank</span><div class="speech">Everyone is out in <span class="hl">93.6 seconds.</span> That is measured — the time the last person crossed an exit. Now, Navya, let's do what a real drill can't: block a door.</div></div>
+    <div class="cue"><b>NAVYA CLICKS:</b> scenario card <b>Blocked exit</b> → speed <b>8×</b> → <b>Run</b> (the button may read “Run again”).</div>
+    <div class="line t"><span class="who">Tishank</span><div class="speech">Door B is now blocked by stored equipment. Watch how people re-route — the computer recalculates every person's route without that door. The Lobby exit is now completely unused, because the only way to it was through Door B.</div></div>
+    <div class="cue"><b>SCREEN:</b> complete — 110.5 s; the evacuation curve shows "Previous run (94 s)".</div>
+    <div class="line t"><span class="who">Tishank</span><div class="speech"><span class="hl">110.5 seconds — one blocked door cost 17 seconds</span> for 200 people. The dashed line is the previous run, so you can see the difference directly.</div></div>
+  </div>
+
+  <!-- SCENE 4B -->
+  <div class="scene">
+    <div class="scene-h"><h2>Scene 4B — Live demo: recommendations &amp; your own venue</h2><span class="time">2:00</span></div>
+    <div class="cue"><b>SWAP:</b> Tishank takes the laptop. <b>TISHANK CLICKS:</b> <b>Suggest improvements</b> (right panel).</div>
+    <div class="line n"><span class="who">Navya</span><div class="speech">Finding the problem is only half the job. When Tishank presses "Suggest improvements", EvacPrint generates every design change it can make to this hall — widening each door, adding an exit, moving the AV console, wider aisles, a shorter stage, removing a seat row — and runs the full evacuation again for each one, three times with three different random crowds.</div></div>
+    <div class="cue"><b>SCREEN:</b> "30 runs · ~1.5 s" and the ranked list.</div>
+    <div class="line n"><span class="who">Navya</span><div class="speech">That was <span class="hl">30 complete simulations in about a second and a half,</span> running in parallel background threads. A change is marked "Helps on every seed" only if it was faster in all three runs — otherwise we honestly call it noise. The top suggestion is adding a one-metre emergency exit on the west wall: about 29 seconds faster on average — more than even clearing Door B.</div></div>
+    <div class="cue"><b>TISHANK CLICKS:</b> <b>Apply &amp; compare</b> on #1 → then <b>Swipe</b>.</div>
+    <div class="line n"><span class="who">Navya</span><div class="speech">Here is the before and after with the same 200 people in the same seats with the same reaction times: <span class="hl">110.5 seconds becomes 83.3 seconds.</span> Average queuing time drops from 36 to 21 seconds, and the red zones shrink. That is a decision a venue manager can act on.</div></div>
+    <div class="cue"><b>TISHANK CLICKS:</b> close dialog → <b>Original</b> (Layout panel) → Tab ④ Venues → <b>Quick room from measurements (no AI)</b> → width 16, depth 11, front exits 2 → <b>Build blueprint &amp; 3D model</b> → <b>Preview evacuation</b>.</div>
+    <div class="line n"><span class="who">Navya</span><div class="speech">And this is not limited to Hall 406. In Venue Studio you can import a floor plan, draw a venue, or — if you just have a tape measure — type the room size, seating and exits. In one click it builds the blueprint and the 3D model, and the same engine runs the evacuation. A 10-step wizard can also add age groups, wheelchair users, staff and different emergency types.</div></div>
+    <div class="cue"><b>OPTIONAL (only if internet works):</b> <b>Ask EvacPrint AI</b> → "Where is the worst bottleneck in this run, and why does it form there?"</div>
+    <div class="line n"><span class="who">Navya</span><div class="speech">Finally, there is an AI assistant connected to Google Gemini through our server. It reads the actual simulation results, so its explanations use real numbers — and it can't change anything without the user pressing Confirm.</div></div>
+  </div>
+
+  <!-- SCENE 5 -->
+  <div class="scene">
+    <div class="scene-h"><h2>Scene 5 — Architecture &amp; tech stack</h2><span class="time">1:15</span></div>
+    <div class="cue"><b>OPTIONAL SCREEN:</b> Technology page → Model card.</div>
+    <div class="line n"><span class="who">Navya</span><div class="speech">EvacPrint is a web app built in plain JavaScript with Vite. The heart is <span class="hl">our own simulation engine</span> — about a thousand lines of pure JavaScript with no dependence on the page — so the same code runs the live view, runs in background Web Workers for the recommendations, and runs in Node.js for our automated tests.</div></div>
+    <div class="line n"><span class="who">Navya</span><div class="speech">The 3D view uses Three.js, the plan and heatmap use the Canvas API, and charts are SVG. Venues and reports are stored in the browser itself, in IndexedDB and localStorage, so the simulator works fully offline. Only the AI goes through a small Node server, which keeps the API key secret.</div></div>
+    <div class="line t"><span class="who">Tishank</span><div class="speech">The engine uses established research. Routes come from <span class="hl">Dijkstra's algorithm</span> — we compute a distance map from every exit, and people walk downhill on it; every two seconds crowded areas become more "expensive", so people re-route away from queues. Walking speed follows the <span class="hl">Weidmann speed–density curve</span>. Doors follow the SFPE planning value of 1.33 people per second per metre. Density is measured with a Gaussian kernel, and bottlenecks are areas above Fruin's Level of Service F for at least three seconds.</div></div>
+    <div class="line t"><span class="who">Tishank</span><div class="speech">Every parameter and its source is listed on our Technology page, and every number on screen comes from a run. Same seed, same result — so anyone can reproduce our numbers.</div></div>
+  </div>
+
+  <!-- SCENE 6 -->
+  <div class="scene" style="break-before:auto;margin-top:6mm">
+    <div class="scene-h"><h2>Scene 6 — Innovation &amp; uniqueness</h2><span class="time">0:40</span></div>
+    <div class="line t"><span class="who">Tishank</span><div class="speech">Three things make EvacPrint different. First, it doesn't just visualise — <span class="hl">it recommends,</span> and it tests every recommendation with full re-simulations instead of rules of thumb. That matters: in our hall, the worst bottleneck is at Door C, yet widening Door C saves only about 3 seconds, while a new west exit saves 17. Intuition would pick the wrong fix.</div></div>
+    <div class="line t"><span class="who">Tishank</span><div class="speech">Second, one engine drives every view, so the 2D, 3D and report always agree. Third, it is honest: it shows what it simulates and what it doesn't, marks unverified dimensions, and says on every result that it is a planning estimate — so weaknesses are found <span class="hl">before an emergency, not during one.</span></div></div>
+  </div>
+
+  <!-- SCENE 7 -->
+  <div class="scene" style="break-before:auto;margin-top:6mm">
+    <div class="scene-h"><h2>Scene 7 — Practical applications &amp; future scope</h2><span class="time">0:40</span></div>
+    <div class="line n"><span class="who">Navya</span><div class="speech">Today, EvacPrint can already help colleges and schools check seminar halls and labs, auditoriums and event organisers decide crowd limits and seating, and offices or public buildings test what a blocked exit costs. Hospitals and malls are natural next users, but they need features we haven't built yet.</div></div>
+    <div class="line n"><span class="who">Navya</span><div class="speech">Our next steps are <span class="hl">multi-floor buildings with stairs, validation against real mock drills,</span> fire and smoke spread coupled to the evacuation, and live occupancy data from sensors — so the digital twin stays in step with the real building.</div></div>
+  </div>
+
+  <!-- SCENE 8 -->
+  <div class="scene" style="break-before:auto;margin-top:6mm">
+    <div class="scene-h"><h2>Scene 8 — Conclusion</h2><span class="time">0:30</span></div>
+    <div class="line t"><span class="who">Tishank</span><div class="speech">To sum up: EvacPrint turns a venue into a digital blueprint, simulates every person in an emergency, finds where the crowd jams, and proves which design change gets people out faster.</div></div>
+    <div class="line n"><span class="who">Navya</span><div class="speech">Our vision is that every hall like this one is tested virtually before it is ever filled — not after something goes wrong.</div></div>
+    <div class="line t"><span class="who">Tishank</span><div class="speech">Thank you. <span class="hl">Every second matters — every exit counts.</span> We'd be happy to answer your questions.</div></div>
+    <div class="cue"><b>SCREEN:</b> return to Tab ① Overview (live 3D hall) during questions.</div>
+  </div>
+</section>
+
+<!-- =============================================================== 13. 3-MIN PITCH -->
+<section class="chapter" id="c13">
+  <div class="ch-head" data-short="13 · 3-min pitch">
+    <div class="ch-num">Chapter 13</div>
+    <h1>Short 3-minute pitch</h1>
+    <p>Use when judges say "you have three minutes". One live action only: Normal run already finished, then block Door B and suggest improvements.</p>
+  </div>
+  <div class="cue"><b>BEFORE:</b> Simulator showing a finished Normal run (93.6 s). Tishank at the laptop.</div>
+  <div class="line t"><span class="who">Tishank</span><div class="speech">Good morning. I'm Tishank, this is Navya, and this is EvacPrint. If the alarm rang in Seminar Hall 406 right now, how long would it take to get everyone out — and where would it jam? Evacuation maps can't answer that. EvacPrint can. <span class="small muted">(0:20)</span></div></div>
+  <div class="line n"><span class="who">Navya</span><div class="speech">EvacPrint turns a venue into a grid of half-metre squares and simulates every person as an independent agent: they react to the alarm, choose an exit using Dijkstra's algorithm, slow down in dense crowds, and queue at doors that can pass only 1.33 people per second per metre. On screen is our model of this hall: 200 people out in 93.6 seconds, with the worst bottleneck at the Door C approach. <span class="small muted">(0:45)</span></div></div>
+  <div class="cue"><b>TISHANK CLICKS:</b> Blocked exit → 8× → Run.</div>
+  <div class="line t"><span class="who">Tishank</span><div class="speech">Now Door B is blocked by stored equipment. Everyone re-routes — and it takes 110.5 seconds: <span class="hl">17 seconds lost to one blocked door.</span> <span class="small muted">(0:25)</span></div></div>
+  <div class="cue"><b>TISHANK CLICKS:</b> Suggest improvements → Apply &amp; compare on #1.</div>
+  <div class="line n"><span class="who">Navya</span><div class="speech">Then EvacPrint tests every design change it can make — 30 full simulations in about a second and a half — and keeps only changes that help in every test run. Adding a one-metre west exit brings it to 83.3 seconds, better even than clearing Door B. <span class="hl">That is a decision you can act on.</span> <span class="small muted">(0:35)</span></div></div>
+  <div class="line t"><span class="who">Tishank</span><div class="speech">It also builds any venue from a floor plan or simple measurements, models wheelchair users and age groups, generates reports, and has an AI assistant that explains results using the real data. It runs in the browser and works offline except for the AI. <span class="small muted">(0:25)</span></div></div>
+  <div class="line n"><span class="who">Navya</span><div class="speech">It is a planning tool, not a certification — but it lets every venue find its weaknesses before an emergency, not during one. Thank you. <span class="small muted">(0:15)</span></div></div>
+  <p class="small muted" style="margin-left:25mm">Total ≈ 2:45 plus clicks.</p>
+
+  <h2><span class="n">13.1</span>30-second elevator version</h2>
+  <div class="box teal"><span class="say">"EvacPrint simulates every person in a venue during an emergency — when they react, which exit they take, where they queue — measures the evacuation time and the bottlenecks, then re-runs the evacuation for every possible design change and tells you which one gets people out fastest. In our model of this hall, one blocked door costs 17 seconds, and one new exit saves 27."</span></div>
+</section>

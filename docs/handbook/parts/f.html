@@ -1,0 +1,287 @@
+
+<!-- =============================================================== 14. Q&A -->
+<section class="chapter" id="c14">
+  <div class="ch-head" data-short="14 · Judges' Q&amp;A">
+    <div class="ch-num">Chapter 14</div>
+    <h1>Judges' questions &amp; answers</h1>
+    <p>38 likely questions in 8 categories. <b style="color:var(--teal-d)">Say</b> = short confident answer · <b>Deeper</b> = follow-up detail · <b style="color:var(--red)">Don't claim</b> = what would be untrue.</p>
+  </div>
+  <div class="box"><span class="t">Answering technique</span>Answer in one sentence first, then offer detail: "Short answer: … If you like, I can show it." If you don't know: "We haven't measured that yet — it's a good next step." Never guess a number.</div>
+
+  <h2><span class="n">1</span>Basic project questions</h2>
+  <div class="qa"><div class="q"><span class="qn">Q1</span>What is EvacPrint, in one line?</div>
+    <div class="a"><b>Say</b>A browser-based crowd-evacuation simulator that measures how long a venue takes to evacuate, finds where crowds jam, and tests which layout change gets people out fastest.</div>
+    <div class="d"><b>Deeper</b>Agent-based model on a 0.5 m grid with Dijkstra routing, Weidmann speed–density, SFPE door capacity, Fruin density levels; recommendation engine with 3-seed re-simulation.</div>
+    <div class="x"><b>Don't claim</b>That it is a certified safety tool or a real-time emergency guidance system.</div></div>
+  <div class="qa"><div class="q"><span class="qn">Q2</span>Who would use it?</div>
+    <div class="a"><b>Say</b>College and school administrators, event organisers, fire-safety officers preparing drills, and architects comparing layouts — anyone deciding door widths, seating or crowd limits.</div>
+    <div class="x"><b>Don't claim</b>That any institution is already using it.</div></div>
+  <div class="qa"><div class="q"><span class="qn">Q3</span>Is your Hall 406 model the exact real hall?</div>
+    <div class="a"><b>Say</b>It is a representative planning model — 21 × 15 m, 340 seats, three 1 m doors — built for the demo. The app itself says "verify dimensions on site before relying on absolute times".</div>
+    <div class="d"><b>Deeper</b>With a measured plan, the Venue Studio can rebuild it exactly: import the plan, calibrate with one known length, trace, add doors.</div>
+    <div class="x"><b>Don't claim</b>That we measured the real hall or that 93.6 s is the real evacuation time of Room 406.</div></div>
+  <div class="qa"><div class="q"><span class="qn">Q4</span>What does the user get at the end?</div>
+    <div class="a"><b>Say</b>Evacuation time, 95 % time, peak density, bottleneck locations, exit usage, risk findings, ranked recommendations with before/after, and a printable report.</div></div>
+
+  <h2><span class="n">2</span>Technical architecture</h2>
+  <div class="qa"><div class="q"><span class="qn">Q5</span>What is your tech stack?</div>
+    <div class="a"><b>Say</b>Vanilla JavaScript with Vite; our own simulation engine; Three.js for 3D; Canvas 2D for the plan and heatmap; SVG charts; Web Workers for parallel runs; IndexedDB and localStorage for storage; a small Node.js server for the AI, which uses Google Gemini.</div>
+    <div class="x"><b>Don't claim</b>React, TypeScript, Python, a cloud database, or a model we trained.</div></div>
+  <div class="qa"><div class="q"><span class="qn">Q6</span>Do you have a backend and a database?</div>
+    <div class="a"><b>Say</b>The simulation runs entirely in the browser. The only server code is a Node.js layer that keeps the AI key secret and talks to Gemini. Data is stored in the browser — IndexedDB for venues and photos, localStorage for demo accounts and reports.</div>
+    <div class="d"><b>Deeper</b>That makes it fast, private and offline-capable; a production version would add a server database for sharing venues across devices and users.</div></div>
+  <div class="qa"><div class="q"><span class="qn">Q7</span>Why not React or another framework?</div>
+    <div class="a"><b>Say</b>Most of the work is in canvas, WebGL and the engine, not in forms. Plain modules kept it fast and small, and the engine has no DOM dependency so it runs in Workers and Node unchanged.</div></div>
+  <div class="qa"><div class="q"><span class="qn">Q8</span>How do the 2D, 3D and charts stay in sync?</div>
+    <div class="a"><b>Say</b>They all read one shared simulation instance owned by a controller. There is no separate 3D simulation — the 3D layer only draws what the engine computes.</div></div>
+  <div class="qa"><div class="q"><span class="qn">Q9</span>What about privacy and security?</div>
+    <div class="a"><b>Say</b>Venue data never leaves the browser unless the user chooses AI drafting. Demo passwords are hashed with PBKDF2 (210,000 iterations). The AI key is only on the server.</div>
+    <div class="x"><b>Don't claim</b>Production-grade authentication — the UI labels it "Demo authentication".</div></div>
+
+  <h2><span class="n">3</span>Algorithm &amp; simulation</h2>
+  <div class="qa"><div class="q"><span class="qn">Q10</span>How is your simulation different from a normal animation?</div>
+    <div class="a"><b>Say</b>An animation is drawn in advance. Ours computes every person's position every 0.1 s from rules. Change any input — block a door, add people — and the result and the timings change. I can block a door right now and you'll see a different number.</div>
+    <div class="d"><b>Deeper</b>Reproducible: the same seed gives identical results, verified by our Node regression script (93.6 / 110.5 / 164.9 / 113.9 s).</div></div>
+  <div class="qa"><div class="q"><span class="qn">Q11</span>How do you calculate evacuation time?</div>
+    <div class="a"><b>Say</b>We don't use a formula — we measure it. Each agent's exit time is logged when they cross a final exit; RSET is the last one. We also report when 50 % and 95 % were out.</div>
+    <div class="d"><b>Deeper</b>It includes reaction time, walking, queuing and route changes. If anyone is still inside at 600 s the run is marked incomplete rather than giving a false number.</div></div>
+  <div class="qa"><div class="q"><span class="qn">Q12</span>How do you model human movement?</div>
+    <div class="a"><b>Say</b>Each person walks down a distance map to their chosen exit at their own speed, slows down as local density rises (Weidmann curve), accelerates smoothly, can't overlap others or walls, and must wait for capacity at doors.</div>
+    <div class="d"><b>Deeper</b>v = v₀[1 − e^(−1.913(1/ρ − 1/5.4))]; relaxation τ = 0.5 s; 3 passes of overlap resolution; token-bucket doors at 1.33 p/s/m; adult v₀ 1.34 ± 0.15 m/s.</div>
+    <div class="x"><b>Don't claim</b>That we model individual psychology, group behaviour (families staying together), or physical crush forces.</div></div>
+  <div class="qa"><div class="q"><span class="qn">Q13</span>Why Dijkstra and not A* or BFS?</div>
+    <div class="a"><b>Say</b>BFS assumes equal step costs, but our diagonal steps, wall-side penalty and congestion make costs unequal. A* finds one path for one person; we need every cell's distance to every exit, which a multi-source Dijkstra gives in one pass per exit.</div></div>
+  <div class="qa"><div class="q"><span class="qn">Q14</span>How do you detect bottlenecks?</div>
+    <div class="a"><b>Say</b>We estimate density per cell with a Gaussian kernel, smooth it over 1 s, and count how long each cell stays above 2.15 people/m² — Fruin's Level of Service F. Connected cells critical for at least 3 s form a zone, named after the nearest door, ranked by duration × peak.</div></div>
+  <div class="qa"><div class="q"><span class="qn">Q15</span>What happens when an exit is blocked?</div>
+    <div class="a"><b>Say</b>It becomes a wall; distance maps are recomputed; people re-route to the remaining exits. In our model blocking Door B raises the time from 93.6 to 110.5 s, and the Lobby exit goes unused because Door B was its only access.</div></div>
+  <div class="qa"><div class="q"><span class="qn">Q16</span>How do you handle panic?</div>
+    <div class="a"><b>Say</b>Panic is a 0–1 slider. Higher panic means up to 30 % faster walking and faster reactions, but less re-routing and door clogging when it's crowded — the "faster-is-slower" effect.</div>
+    <div class="x"><b>Don't claim</b>That it is a validated psychological model; it is a simplified, phenomenological version of the effect described by Helbing et al. (2000).</div></div>
+  <div class="qa"><div class="q"><span class="qn">Q17</span>How do you model elderly people and wheelchair users?</div>
+    <div class="a"><b>Say</b>They are separate agent types with lower speeds (0.7–1.0 m/s for wheelchairs), larger body size, longer reaction times, and wheelchair users avoid exits marked not step-free. The analysis shows an outcome table per group and warns if wheelchair users are among the last out.</div>
+    <div class="x"><b>Don't claim</b>Stair evacuation chairs or assisted carries in detail — stairs are modelled as slow floor; separate floors are not modelled.</div></div>
+  <div class="qa"><div class="q"><span class="qn">Q18</span>Your peak density is 6 people/m², but the speed curve stops at 5.4. Isn't that inconsistent?</div>
+    <div class="a"><b>Say</b>5.4 is a parameter of the speed curve — the density at which walking stops. The 6.0 is a smoothed kernel estimate at the tightest point of a queue arch, where people are pressed against the door frame. Both say the same thing: that spot is critical.</div>
+    <div class="d"><b>Deeper</b>Agents are discs of 0.22 m radius; close packing allows ~6 p/m² locally. We report it as "Critical" rather than as an exact physical measurement.</div></div>
+
+  <h2><span class="n">4</span>AI &amp; 3D modelling</h2>
+  <div class="qa"><div class="q"><span class="qn">Q19</span>Is the AI assistant connected to a real AI model?</div>
+    <div class="a"><b>Say</b>Yes — Google Gemini, called from our Node server; the panel shows "Connected · Gemini". It receives a snapshot of the real simulation, so its answers use our measured numbers. If no key is configured it switches to a clearly labelled offline guide that is rule-based, not AI.</div>
+    <div class="x"><b>Don't claim</b>That we trained or fine-tuned the model, or that the AI runs the simulation — the engine does.</div></div>
+  <div class="qa"><div class="q"><span class="qn">Q20</span>Can the AI change my venue on its own?</div>
+    <div class="a"><b>Say</b>No. Any action that changes something shows a Confirm card first, and what-if tests run on a copy, never on the original venue.</div></div>
+  <div class="qa"><div class="q"><span class="qn">Q21</span>How does the 3D model get generated?</div>
+    <div class="a"><b>Say</b>Parametrically, from the same 0.5 m grid the engine uses: walls, seats, stage, doors and exits are extruded into 3D with Three.js. No 3D scanning — so if the blueprint is right, the 3D is right.</div></div>
+  <div class="qa"><div class="q"><span class="qn">Q22</span>Can a single image accurately reconstruct an entire building?</div>
+    <div class="a"><b>Say</b>No, and we don't claim that. From photos, the AI gives a first draft — rooms, doors, seating — but a photo can't measure distances. Without measurements every size is marked "unverified", and the user reviews each element. For accuracy, use a floor plan with scale calibration or the measurement-based Quick room builder.</div></div>
+  <div class="qa"><div class="q"><span class="qn">Q23</span>What happens if the floor plan is incorrect?</div>
+    <div class="a"><b>Say</b>Then the results are wrong — garbage in, garbage out. That's why we have calibration from a known length, validation checks (unconnected doors, unreachable floor, capacity), "dimensions unverified" warnings on every result, and why we position it as a comparison tool.</div></div>
+  <div class="qa"><div class="q"><span class="qn">Q24</span>Is the voice assistant real-time?</div>
+    <div class="a"><b>Say</b>It uses the browser's built-in speech recognition and speech synthesis; text answers stream as they are generated. We tested the text assistant live; we haven't tested voice on this laptop's microphone, so we demo with text.</div>
+    <div class="x"><b>Don't claim</b>Real-time voice conversation or that voice works offline.</div></div>
+
+  <h2><span class="n">5</span>Accuracy &amp; validation</h2>
+  <div class="qa"><div class="q"><span class="qn">Q25</span>How realistic is your simulation?</div>
+    <div class="a"><b>Say</b>It uses published, widely used parameters — Weidmann walking speeds, SFPE door flow, Fruin density levels — so the behaviour is realistic in kind: queues at doors, slowdowns in crowds, re-routing. Absolute times depend on the input and haven't been validated against a drill in this hall yet.</div>
+    <div class="x"><b>Don't claim</b>"Accurate to the second", "validated", or "as accurate as commercial tools".</div></div>
+  <div class="qa"><div class="q"><span class="qn">Q26</span>How do you validate your results?</div>
+    <div class="a"><b>Say</b>Today: internal consistency — reproducible seeds, an automated regression test, hand cross-checks such as people ÷ door flow, and three-seed comparisons for every recommendation. Next: compare with a timed mock drill in Hall 406 and with published benchmark cases.</div>
+    <div class="d"><b>Deeper</b>Example cross-check: Door A carried 84 people; 84 ÷ 1.33 ≈ 63 s of discharge plus 10–30 s reaction ≈ 75–95 s, consistent with the measured 93.6 s.</div></div>
+  <div class="qa"><div class="q"><span class="qn">Q27</span>Why does a result change when I change the seed?</div>
+    <div class="a"><b>Say</b>The seed decides who sits where and each person's speed and reaction time. Different crowds give slightly different times — that's real variability. That's why recommendations use three seeds and show the range.</div></div>
+  <div class="qa"><div class="q"><span class="qn">Q28</span>The report shows a door at 1.40 of 1.33 p/s — above capacity?</div>
+    <div class="a"><b>Say</b>Peak flow is counted in 5-second windows. The door gate can store one "token", so a single window can briefly show slightly more than the average capacity. Over time the flow is limited to 1.33 p/s per metre.</div></div>
+
+  <h2><span class="n">6</span>Scalability &amp; real-world implementation</h2>
+  <div class="qa"><div class="q"><span class="qn">Q29</span>Can it handle 1,000 or 10,000 people?</div>
+    <div class="a"><b>Say</b>The Hall 406 simulator goes up to 400. In Venue Studio, we measured a 30 × 25 m room with about 900 people simulated in 0.6 s of computer time. Around 3,000 people still runs (about 14 s), but a handful of agents didn't finish within the 600 s limit — a known limitation we'd fix before scaling. 10,000 would need optimisation and spatial partitioning.</div>
+    <div class="x"><b>Don't claim</b>That it handles 10,000 people in real time today.</div></div>
+  <div class="qa"><div class="q"><span class="qn">Q30</span>Can it model a multi-storey building?</div>
+    <div class="a"><b>Say</b>Not yet. It models one floor; stairs are treated as slow floor. Multi-floor with stair flow is our first future step.</div></div>
+  <div class="qa"><div class="q"><span class="qn">Q31</span>How would you deploy this for real?</div>
+    <div class="a"><b>Say</b>It's already a production build (<code>npm run build</code>) served by a small Node server. Next: host it, add a real database and login, team sharing of venues, and partner with a college for a validation drill.</div></div>
+
+  <h2><span class="n">7</span>Limitations &amp; future scope</h2>
+  <div class="qa"><div class="q"><span class="qn">Q32</span>Is this a certified life-safety system?</div>
+    <div class="a"><b>Say</b>No. It's a comparative planning and decision-support tool. Every result screen says so. Compliance requires a qualified fire-safety engineer and the National Building Code, NBC 2016 Part 4.</div></div>
+  <div class="qa"><div class="q"><span class="qn">Q33</span>What are the current limitations?</div>
+    <div class="a"><b>Say</b>Single floor; no fire or smoke spread; simplified panic; no group behaviour; door and walking parameters are planning values; Hall 406 dimensions not yet measured; AI drafts need checking; accounts are local demo accounts. Chapter 15 lists them all.</div></div>
+  <div class="qa"><div class="q"><span class="qn">Q34</span>What happens without internet access?</div>
+    <div class="a"><b>Say</b>Everything except the AI keeps working — simulator, 3D, recommendations, Venue Studio, reports. Fonts and libraries are bundled locally. Only the AI assistant and AI drafting need internet.</div></div>
+  <div class="qa"><div class="q"><span class="qn">Q35</span>Do you simulate fire and smoke?</div>
+    <div class="a"><b>Say</b>Not their spread. You can draw fire-seat zones that close an area and smoke zones that slow walking, and the wizard lists clearly what is simulated and what isn't. Coupling a fire model to compute ASET is future work.</div></div>
+
+  <h2><span class="n">8</span>Innovation &amp; impact</h2>
+  <div class="qa"><div class="q"><span class="qn">Q36</span>Evacuation simulators already exist. What's new here?</div>
+    <div class="a"><b>Say</b>Three things together: it runs free in a browser for non-specialists; it automatically tests and ranks design changes with fair multi-seed re-simulation instead of only visualising; and it's transparent about every parameter and limitation.</div>
+    <div class="x"><b>Don't claim</b>That no other tool can do this, or that it is better than professional software.</div></div>
+  <div class="qa"><div class="q"><span class="qn">Q37</span>Why trust your recommendation over common sense?</div>
+    <div class="a"><b>Say</b>Because it's tested, not assumed. Common sense says "widen the worst door". In our hall, widening Door C — the worst bottleneck — saves about 3 s, but adding a west exit saves about 17 s. Each option is re-run on the same three crowds.</div></div>
+  <div class="qa"><div class="q"><span class="qn">Q38</span>What was the hardest technical problem?</div>
+    <div class="a"><b>Say</b>Getting realistic crowding. Early versions let people overlap, so densities were unrealistic; we added three passes of collision resolution and a Gaussian density estimate. Then the faster-is-slower effect didn't appear because door density was measured on wall cells — we fixed it by measuring in front of each door.</div></div>
+</section>
+
+<!-- =============================================================== 15. LIMITATIONS -->
+<section class="chapter" id="c15">
+  <div class="ch-head" data-short="15 · Limitations">
+    <div class="ch-num">Chapter 15</div>
+    <h1>Limitations</h1>
+    <p>Knowing these by heart is a strength, not a weakness.</p>
+  </div>
+
+  <div class="box amber"><span class="t">Positioning statement — memorise</span>
+    "Simulation outputs are estimates based on model assumptions. They are meant for comparing design options, and need validation against real-world drills and expert review before being used for safety decisions."
+  </div>
+
+  <h2><span class="n">15.1</span>What the prototype can do today</h2>
+  <ul>
+    <li>Simulate 200–400 people in Hall 406 in four scenarios (any combination of crowd size, mobility, reaction time, panic and blocked exits), live in 2D and 3D.</li>
+    <li>Measure RSET, t50/t95, density, exit use, queuing; detect bottlenecks; produce risk findings.</li>
+    <li>Test and rank design changes with 3-seed re-simulation; show before/after; save and print reports.</li>
+    <li>Build custom single-floor venues from floor plans, DXF, drawing, measurements or AI drafts; configure detailed populations; simulate and analyse them.</li>
+    <li>Explain everything through Learn, How It Works, Technology and the AI assistant.</li>
+  </ul>
+
+  <h2><span class="n">15.2</span>What it cannot do yet</h2>
+  <table class="compact">
+    <thead><tr><th style="width:56mm">Limitation</th><th>Detail</th></tr></thead>
+    <tbody>
+      <tr><td>Single floor only</td><td>Stairs and ramps are slow floor zones (×0.6 adults, ×0.12 wheelchair users); no multi-storey flow.</td></tr>
+      <tr><td>No fire / smoke physics</td><td>No fire growth, smoke movement, heat or toxicity, so no ASET. Hazard zones are static.</td></tr>
+      <tr><td>Simplified behaviour</td><td>No families or groups staying together, no helping behaviour, no leaders/followers; caregivers are not kept beside the person they assist.</td></tr>
+      <tr><td>No physical crush forces</td><td>Densities are measured, but forces on bodies are not modelled.</td></tr>
+      <tr><td>Planning-value parameters</td><td>Walking speeds, door flow (1.33 p/s/m), reaction times and environment multipliers are literature/planning values, not calibrated to Indian college crowds.</td></tr>
+      <tr><td>Hall 406 is representative</td><td>Dimensions not measured on site.</td></tr>
+      <tr><td>Grid resolution 0.5 m</td><td>Door and exit widths are effectively multiples of 0.5 m; very narrow features are approximated.</td></tr>
+      <tr><td>Large crowds</td><td>~900 people is fast; at ~3,000 a few agents may not finish within 600 s; 10,000 is untested.</td></tr>
+      <tr><td>Imports</td><td>Wall tracing cannot detect doors; DWG not supported; PDF imports page 1 only; DXF supports lines, polylines and arcs.</td></tr>
+      <tr><td>AI</td><td>Needs internet and an API key; free tier is rate-limited; drafts from photos are estimates.</td></tr>
+      <tr><td>Voice and camera</td><td>Implemented with browser APIs but not tested on the presentation hardware.</td></tr>
+      <tr><td>Accounts and storage</td><td>Local to one browser; no cloud sync or multi-user sharing; demo authentication only.</td></tr>
+      <tr><td>Known UI quirk</td><td>3D View page: Door B label can stay "blocked" after switching scenario via that page's dropdown.</td></tr>
+    </tbody>
+  </table>
+
+  <h2><span class="n">15.3</span>What needs real-world testing</h2>
+  <ul>
+    <li>A timed mock drill in Hall 406 (video-recorded) to compare total time, per-door counts and queue locations with the model.</li>
+    <li>Measured door flow rates and reaction times for Indian college audiences.</li>
+    <li>On-site measurement of Hall 406 (room, aisles, door clear widths).</li>
+    <li>Usability testing with real venue administrators.</li>
+  </ul>
+
+  <h2><span class="n">15.4</span>What data would improve accuracy</h2>
+  <ul>
+    <li>Accurate CAD/DXF plans of real venues.</li>
+    <li>Drill footage → speed, density and door-flow measurements for calibration.</li>
+    <li>Occupancy patterns (where people actually sit), share of mobility-impaired occupants.</li>
+    <li>Alarm and detection timings from the building's fire-alarm system.</li>
+  </ul>
+</section>
+
+<!-- =============================================================== 16. FUTURE -->
+<section class="chapter" id="c16">
+  <div class="ch-head" data-short="16 · Future scope">
+    <div class="ch-num">Chapter 16</div>
+    <h1>Future scope</h1>
+    <p>Clearly separated from what exists today. Present all of this as "next steps".</p>
+  </div>
+
+  <table class="compact">
+    <thead><tr><th style="width:42mm">Horizon</th><th>What we would build</th><th style="width:44mm">Why</th></tr></thead>
+    <tbody>
+      <tr><td>Next 3 months</td><td>Validation drill in Hall 406; measure the real hall; multi-floor venues with stair flow; fix large-crowd edge cases; group behaviour</td><td>Credibility and real buildings</td></tr>
+      <tr><td>6 months</td><td>Hosted version with real accounts and a database; team sharing of venues; export to PDF/CSV for audits; NBC 2016 travel-distance and exit-width checklists as references</td><td>Make it usable by institutions</td></tr>
+      <tr><td>1 year</td><td>Couple a fire/smoke model to compute ASET vs RSET; live occupancy from Wi-Fi counts, ticket scans or door sensors (a true live digital twin); signage and wayfinding optimisation</td><td>From planning to operations</td></tr>
+      <tr><td>Beyond</td><td>Hospitals (bed/stretcher evacuation, staff-assisted), malls and stations (large crowds, multiple floors), event venues (dynamic crowd limits)</td><td>New domains need new behaviour models</td></tr>
+    </tbody>
+  </table>
+
+  <h2><span class="n">16.1</span>Applications by sector — now vs later</h2>
+  <table class="compact">
+    <thead><tr><th style="width:36mm">Sector</th><th>Can do with the current prototype</th><th>Needs future work</th></tr></thead>
+    <tbody>
+      <tr><td>Educational institutions</td><td>Seminar halls, classrooms, labs (single floor): blocked-exit tests, seating and crowd limits, mixed-mobility planning</td><td>Whole multi-storey buildings</td></tr>
+      <tr><td>Auditoriums</td><td>Seating layouts, aisle widths, exit additions, over-capacity scenarios</td><td>Balconies (multi-level)</td></tr>
+      <tr><td>Event venues</td><td>Crowd-size what-ifs, standing crowds, door planning</td><td>Outdoor open areas, live crowd feeds</td></tr>
+      <tr><td>Offices</td><td>Single-floor layouts, furniture blocking routes</td><td>Stair cores for high-rise</td></tr>
+      <tr><td>Public buildings</td><td>Single-floor halls, blocked-route analysis</td><td>Multi-level, large crowds</td></tr>
+      <tr><td>Shopping malls</td><td>A single floor zone as a study</td><td>Multiple floors, escalators, thousands of people</td></tr>
+      <tr><td>Hospitals</td><td>Basic layout studies only</td><td>Bed-bound and assisted evacuation, horizontal phased evacuation</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- =============================================================== 17. HOW TO RUN -->
+<section class="chapter" id="c17">
+  <div class="ch-head" data-short="17 · How to run">
+    <div class="ch-num">Chapter 17</div>
+    <h1>How to run the project</h1>
+    <p>On the presentation laptop, in the project folder.</p>
+  </div>
+  <table class="compact plain">
+    <thead><tr><th style="width:55mm">Command</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><code>npm install</code></td><td>Once, to install dependencies (needs internet; already done).</td></tr>
+      <tr><td><code>npm run dev</code></td><td>Starts the development server. Open the URL it prints (usually <code>http://localhost:5173</code>; if that port is busy, Vite uses 5174). Includes the AI endpoint.</td></tr>
+      <tr><td><code>npm run test:sim</code></td><td>Runs the 4 scenarios in Node. Expected RSET: Normal 93.6 · Blocked 110.5 · Larger 164.9 · Mixed 113.9 s.</td></tr>
+      <tr><td><code>npm run build</code> then <code>npm start</code></td><td>Production build and server on <code>http://localhost:4173</code> (also serves the AI endpoint).</td></tr>
+      <tr><td><code>npm run illustrations</code></td><td>Regenerates the 7 SVG illustrations from the engine.</td></tr>
+    </tbody>
+  </table>
+  <div class="box"><span class="t">AI key</span>The file <code>.env.local</code> in the project folder holds <code>GEMINI_API_KEY=…</code> (free key from Google AI Studio). It is read only by the server and never committed or sent to the browser. Restart <code>npm run dev</code> after changing it. Without it, the assistant shows a setup card and the offline guide.</div>
+</section>
+
+<!-- =============================================================== 18. CHECKLIST -->
+<section class="chapter" id="c18">
+  <div class="ch-head" data-short="18 · Rehearsal checklist">
+    <div class="ch-num">Chapter 18</div>
+    <h1>Final rehearsal checklist</h1>
+    <p>Tick these tonight and again 30 minutes before presenting. A separate one-page version is in <em>EvacPrint_Last_Minute_Rehearsal_Checklist.pdf</em>.</p>
+  </div>
+  <div class="two">
+    <div>
+      <h3>Tonight</h3>
+      <ul class="check">
+        <li>Read chapters 1, 3, 8, 10, 15 together</li>
+        <li>Each person explains Dijkstra, Weidmann and bottleneck detection to the other in under 30 s</li>
+        <li>Rehearse the full script twice with a timer (target ≤ 9:45)</li>
+        <li>Rehearse the 3-minute pitch once</li>
+        <li>Run the demo scenario three times; numbers match 11.2</li>
+        <li>Practise the laptop swap between Scene 4A and 4B</li>
+        <li>Quiz each other on 15 random questions from chapter 14</li>
+        <li>Run <code>npm run test:sim</code> — 93.6 / 110.5 / 164.9 / 113.9</li>
+        <li>Generate a sample report and keep it saved</li>
+        <li>Charge laptop; pack charger and HDMI/USB-C adapter</li>
+      </ul>
+    </div>
+    <div>
+      <h3>30 minutes before</h3>
+      <ul class="check">
+        <li><code>npm run dev</code> running; URL opens</li>
+        <li>Signed in (Enter the demo)</li>
+        <li>Tabs: ① Overview ② Simulator (Normal, Original, Split, 4×) ③ Report ④ Venues</li>
+        <li>Projector: resolution and browser zoom checked; right panel visible</li>
+        <li>Notifications off; other apps closed; volume muted (AI speech)</li>
+        <li>AI panel shows "Connected · Gemini" — or decide to skip AI</li>
+        <li>Wi-Fi status known (AI only)</li>
+        <li>This PDF open as a backup</li>
+        <li>Water; deep breath; agree who starts</li>
+      </ul>
+      <h3>Body language</h3>
+      <ul>
+        <li>Face the judges; glance at the screen only to point.</li>
+        <li>The one who isn't speaking watches the screen and the judges — not their phone.</li>
+        <li>Slow down on numbers: "ninety-three point six seconds".</li>
+        <li>Pause after key results — let the screen speak.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="box dark" style="margin-top:6mm"><span class="t">Five numbers both presenters must know</span>
+    <strong>93.6 s</strong> normal (200 people) · <strong>110.5 s</strong> with Door B blocked · <strong>83.3 s</strong> after adding the west exit · <strong>1.33</strong> people per second per metre of door · <strong>2.15</strong> people/m² = Level of Service F (bottleneck threshold).
+  </div>
+</section>
+
+</body>
+</html>

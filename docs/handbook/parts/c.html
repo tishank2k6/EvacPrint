@@ -1,0 +1,341 @@
+
+<!-- =============================================================== 6. TECH STACK -->
+<section class="chapter" id="c6">
+  <div class="ch-head" data-short="06 · Tech stack">
+    <div class="ch-num">Chapter 06</div>
+    <h1>Technology stack</h1>
+    <p>Verified against <code>package.json</code>, the imports in <code>src/</code> and the server code. Nothing listed here is hypothetical.</p>
+  </div>
+
+  <div class="box teal"><span class="t">In one breath</span>
+    EvacPrint is a <strong>vanilla JavaScript</strong> web app (no React, no TypeScript) built with <strong>Vite</strong>. The simulation engine is our own JavaScript code. <strong>Three.js</strong> draws the 3D view, the <strong>Canvas 2D API</strong> draws the plan and heatmap, <strong>SVG</strong> draws the charts, <strong>Web Workers</strong> run many simulations in parallel, and the browser's <strong>IndexedDB / localStorage</strong> store venues and reports. A small <strong>Node.js</strong> server layer keeps the AI key secret and talks to <strong>Google Gemini</strong>.
+  </div>
+
+  <table class="compact">
+    <thead><tr><th style="width:33mm">Technology</th><th style="width:36mm">Where used</th><th style="width:42mm">Why used</th><th>How it works in EvacPrint</th></tr></thead>
+    <tbody>
+      <tr><td>HTML5 + CSS3</td><td>Whole UI; <code>src/styles/*.css</code></td><td>No framework overhead; full design control</td><td>Hand-written design system: CSS variables for the charcoal / warm-white / teal / amber / red palette, grid layouts, print styles for reports, reduced-motion support.</td></tr>
+      <tr><td>JavaScript (ES modules)</td><td>All of <code>src/</code>, <code>server/</code>, <code>scripts/</code></td><td>Same language in browser, workers and Node</td><td>About 13,000 lines across ~60 modules. A tiny hash router (<code>src/main.js</code>) lazy-loads each page. No React, no TypeScript.</td></tr>
+      <tr><td>Vite 5.4.10</td><td><code>vite.config.js</code></td><td>Fast dev server and production build</td><td><code>npm run dev</code> serves the app with hot reload; a Vite plugin mounts our <code>/api/assistant</code> handler in the dev server. <code>npm run build</code> bundles everything into <code>dist/</code>.</td></tr>
+      <tr><td>Own simulation engine</td><td><code>src/sim/engine.js</code>, <code>pathfinding.js</code>, <code>layout.js</code></td><td>Full control, explainable, runs anywhere</td><td>Agent-based model: Dijkstra distance fields, Weidmann speed–density, collision resolution, door capacity gates, density kernel, bottleneck detection. Pure JS with no DOM access.</td></tr>
+      <tr><td>Three.js 0.169.0</td><td><code>src/render/view3d.js</code>, overview hero, 3D tabs</td><td>Standard WebGL library</td><td>Extrudes walls, seats, stage and exits from the grid; draws agents with instanced meshes; OrbitControls for rotate/pan/zoom. Loaded lazily so pages without 3D stay light.</td></tr>
+      <tr><td>Canvas 2D API</td><td><code>src/render/floorplan.js</code>, labs, venue editor</td><td>Fast drawing of hundreds of agents per frame</td><td>Cached linework layers + per-frame density heatmap, agents, queues and markers, interpolated between 0.1 s steps.</td></tr>
+      <tr><td>SVG</td><td><code>src/render/charts.js</code>, explainers, illustrations</td><td>Crisp, light, printable</td><td>Our own small chart code (no Chart.js): evacuation curve with tooltip, exit bars. Animated explainers and the 7 standalone illustrations are SVG.</td></tr>
+      <tr><td>Web Workers</td><td><code>src/sim/worker.js</code>, <code>batch.js</code>, <code>recommend.js</code></td><td>Run many simulations without freezing the UI</td><td>A pool of up to 4 workers runs headless simulations (benchmark, recommendations, what-ifs, reports). 30 runs ≈ 1.5 s.</td></tr>
+      <tr><td>IndexedDB</td><td><code>src/venue/store.js</code></td><td>Store large data (photos, plans) in the browser</td><td>Venues and their media blobs, per user, "stored in this browser".</td></tr>
+      <tr><td>localStorage / sessionStorage</td><td><code>src/auth/auth.js</code>, <code>src/reports/store.js</code></td><td>Simple persistence without a server</td><td>Demo accounts (hashed), sessions ("Remember me" uses localStorage, otherwise sessionStorage), saved reports.</td></tr>
+      <tr><td>WebCrypto (PBKDF2-SHA-256)</td><td><code>src/auth/auth.js</code></td><td>Never store plain passwords</td><td>210,000 iterations, 16-byte random salt, timing-safe comparison.</td></tr>
+      <tr><td>pdfjs-dist 4.10.38</td><td><code>src/venue/importers.js</code></td><td>Read PDF floor plans in the browser</td><td>Renders page 1 of the PDF to an image for calibration and tracing.</td></tr>
+      <tr><td>Browser media APIs</td><td><code>src/venue/capture.js</code>, <code>importers.js</code></td><td>Capture and import venue references</td><td><code>getUserMedia</code> for the camera; a video element + <code>requestVideoFrameCallback</code> to extract 8 frames from MP4/WebM.</td></tr>
+      <tr><td>Web Speech + Web Audio API</td><td><code>src/assistant/assistant.js</code></td><td>Voice questions and spoken answers</td><td><code>SpeechRecognition</code> (speech → text), <code>speechSynthesis</code> (text → speech), <code>AnalyserNode</code> for the live waveform.</td></tr>
+      <tr><td>Node.js</td><td><code>server/index.mjs</code>, <code>server/assistant.mjs</code>, <code>scripts/</code></td><td>Keep API keys secret; tests</td><td>Production static server (port 4173) + <code>/api/assistant</code> (status, chat, blueprint) with request-size limits and a per-IP rate limit. <code>scripts/sim-check.mjs</code> runs the 4 scenarios in Node as a regression test.</td></tr>
+      <tr><td>Google Gemini API</td><td><code>server/gemini.mjs</code></td><td>Free-tier language + vision model</td><td>REST over <code>fetch</code>: streaming chat with function calling (the app's tools), and structured JSON output for blueprint drafting. Default <code>gemini-3.5-flash-lite</code>, automatic fallback to other free models, timeouts.</td></tr>
+      <tr><td>@anthropic-ai/sdk 1.8.0</td><td><code>server/assistant.mjs</code></td><td>Optional paid provider</td><td>If <code>ANTHROPIC_API_KEY</code> is set, Claude is used instead of Gemini. Not used in our current setup.</td></tr>
+      <tr><td>Server-Sent Events</td><td>server → browser</td><td>Stream AI text as it is generated</td><td>The chat endpoint streams text chunks; the browser shows them live.</td></tr>
+      <tr><td>@fontsource IBM Plex</td><td><code>src/main.js</code></td><td>Consistent typography, works offline</td><td>IBM Plex Sans and Mono are bundled — no Google Fonts call at runtime.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="box red"><span class="t">Not in the project — do not claim</span>
+    React / Angular / Vue · TypeScript · Python, Flask, FastAPI · a database server (MySQL, MongoDB, Firebase) · Chart.js · BFS or A* pathfinding · machine-learning models trained by us · computer vision that measures rooms · real fire or smoke physics · cloud hosting (the prototype runs locally).
+  </div>
+</section>
+
+<!-- =============================================================== 7. ARCHITECTURE -->
+<section class="chapter" id="c7">
+  <div class="ch-head" data-short="07 · Architecture">
+    <div class="ch-num">Chapter 07</div>
+    <h1>System architecture</h1>
+    <p>One grid, one engine, many views.</p>
+  </div>
+
+  <svg viewBox="0 0 720 470" style="width:100%" role="img" aria-label="EvacPrint architecture">
+    <defs><marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3d434b"/></marker></defs>
+    <g font-size="11">
+      <!-- user -->
+      <rect x="10" y="10" width="700" height="40" rx="8" fill="#1c2025"/>
+      <text x="360" y="35" text-anchor="middle" fill="#ece6da" font-weight="600" font-size="12.5">User in a web browser (Chrome / Edge) — mouse, keyboard, optional camera &amp; microphone</text>
+      <!-- frontend -->
+      <rect x="10" y="66" width="700" height="96" rx="8" fill="#f3efe8" stroke="#c9c2b5"/>
+      <text x="22" y="84" fill="#157567" font-weight="600" font-size="9.5" letter-spacing="1.4">FRONTEND · VANILLA JS PAGES (src/pages, src/ui)</text>
+      <g fill="#fff" stroke="#c9c2b5">
+        <rect x="22" y="94" width="104" height="56" rx="6"/><rect x="134" y="94" width="104" height="56" rx="6"/><rect x="246" y="94" width="104" height="56" rx="6"/><rect x="358" y="94" width="104" height="56" rx="6"/><rect x="470" y="94" width="104" height="56" rx="6"/><rect x="582" y="94" width="116" height="56" rx="6"/>
+      </g>
+      <g text-anchor="middle" fill="#1b1e22">
+        <text x="74" y="117" font-weight="600">Overview</text><text x="74" y="133" font-size="9.5" fill="#6b7178">live hero, benchmark</text>
+        <text x="186" y="117" font-weight="600">Simulator</text><text x="186" y="133" font-size="9.5" fill="#6b7178">scenarios, controls</text>
+        <text x="298" y="117" font-weight="600">3D View</text><text x="298" y="133" font-size="9.5" fill="#6b7178">synchronized</text>
+        <text x="410" y="117" font-weight="600">Venue Studio</text><text x="410" y="133" font-size="9.5" fill="#6b7178">capture, editor, wizard</text>
+        <text x="522" y="117" font-weight="600">Reports</text><text x="522" y="133" font-size="9.5" fill="#6b7178">save, print</text>
+        <text x="640" y="117" font-weight="600">Learn · AI panel</text><text x="640" y="133" font-size="9.5" fill="#6b7178">explainers, assistant</text>
+      </g>
+      <!-- logic -->
+      <rect x="10" y="178" width="455" height="118" rx="8" fill="#e3f3f0" stroke="#1f9d8c"/>
+      <text x="22" y="196" fill="#157567" font-weight="600" font-size="9.5" letter-spacing="1.4">APPLICATION LOGIC + SIMULATION CORE (src/sim, src/venue)</text>
+      <g fill="#fff" stroke="#1f9d8c">
+        <rect x="22" y="206" width="132" height="78" rx="6"/><rect x="164" y="206" width="138" height="78" rx="6"/><rect x="312" y="206" width="140" height="78" rx="6"/>
+      </g>
+      <g fill="#1b1e22" text-anchor="middle">
+        <text x="88" y="226" font-weight="600">Layout model</text><text x="88" y="243" font-size="9.5">0.5 m grid · openings</text><text x="88" y="257" font-size="9.5">venue shapes → rasterize</text><text x="88" y="271" font-size="9.5">layout.js · model.js</text>
+        <text x="233" y="226" font-weight="600">Simulation engine</text><text x="233" y="243" font-size="9.5">Dijkstra fields · agents</text><text x="233" y="257" font-size="9.5">density · doors · bottlenecks</text><text x="233" y="271" font-size="9.5">engine.js · pathfinding.js</text>
+        <text x="382" y="226" font-weight="600">Shared controller</text><text x="382" y="243" font-size="9.5">one live Simulation</text><text x="382" y="257" font-size="9.5">scenario · play speed</text><text x="382" y="271" font-size="9.5">controller.js</text>
+      </g>
+      <!-- workers -->
+      <rect x="480" y="178" width="230" height="118" rx="8" fill="#e6e9f6" stroke="#4f63b3"/>
+      <text x="492" y="196" fill="#4f63b3" font-weight="600" font-size="9.5" letter-spacing="1.4">WEB WORKERS (parallel)</text>
+      <g fill="#1b1e22"><text x="492" y="218">Headless engine runs</text><text x="492" y="236" font-size="9.5">• recommendations (variants × 3 seeds)</text><text x="492" y="252" font-size="9.5">• benchmark · what-if · sample report</text><text x="492" y="268" font-size="9.5">• risk analysis (risk.js)</text><text x="492" y="284" font-size="9.5">worker.js · batch.js · recommend.js</text></g>
+      <!-- views -->
+      <rect x="10" y="312" width="455" height="70" rx="8" fill="#fbf0dc" stroke="#c9861f"/>
+      <text x="22" y="330" fill="#94600f" font-weight="600" font-size="9.5" letter-spacing="1.4">VISUALIZATION &amp; ANALYTICS (read the same state)</text>
+      <g fill="#1b1e22"><text x="22" y="350">2D plan + heatmap (Canvas) · 3D model (Three.js) · charts (SVG)</text><text x="22" y="368" font-size="9.5">floorplan.js · view3d.js · charts.js · compare.js</text></g>
+      <!-- storage -->
+      <rect x="480" y="312" width="230" height="70" rx="8" fill="#fff" stroke="#c9c2b5"/>
+      <text x="492" y="330" fill="#6b7178" font-weight="600" font-size="9.5" letter-spacing="1.4">BROWSER STORAGE</text>
+      <g fill="#1b1e22"><text x="492" y="350" font-size="10">IndexedDB: venues, photos, plans</text><text x="492" y="367" font-size="10">localStorage: accounts, reports</text></g>
+      <!-- server -->
+      <rect x="10" y="398" width="455" height="62" rx="8" fill="#1c2025"/>
+      <text x="22" y="416" fill="#6fd8c9" font-weight="600" font-size="9.5" letter-spacing="1.4">NODE SERVER LAYER (server/) — only for AI</text>
+      <g fill="#ece6da"><text x="22" y="436" font-size="10">/api/assistant: status · chat (SSE, tools) · blueprint (JSON)</text><text x="22" y="451" font-size="10">API key in .env.local, never sent to the browser · rate limit</text></g>
+      <rect x="480" y="398" width="230" height="62" rx="8" fill="#fff" stroke="#c4433b" stroke-dasharray="4 3"/>
+      <text x="492" y="418" fill="#c4433b" font-weight="600" font-size="9.5" letter-spacing="1.4">EXTERNAL (internet)</text>
+      <g fill="#1b1e22"><text x="492" y="436" font-size="10">Google Gemini API (default)</text><text x="492" y="451" font-size="10">or Anthropic Claude (if key set)</text></g>
+      <!-- arrows -->
+      <g stroke="#3d434b" stroke-width="1.4" fill="none" marker-end="url(#a2)">
+        <line x1="360" y1="50" x2="360" y2="64"/>
+        <line x1="238" y1="162" x2="238" y2="176"/>
+        <line x1="154" y1="245" x2="162" y2="245"/>
+        <line x1="302" y1="245" x2="310" y2="245"/>
+        <line x1="465" y1="237" x2="478" y2="237"/>
+        <line x1="238" y1="296" x2="238" y2="310"/>
+        <line x1="594" y1="296" x2="594" y2="310"/>
+        <line x1="640" y1="162" x2="640" y2="176"/>
+        <line x1="238" y1="382" x2="238" y2="396"/>
+        <line x1="465" y1="429" x2="478" y2="429"/>
+      </g>
+    </g>
+  </svg>
+  <p class="small muted" style="margin-top:2mm">Everything except the AI path runs inside the browser. If the internet is down, only the AI assistant and AI drafting stop working.</p>
+
+  <h2><span class="n">7.1</span>How data flows — one simulation run</h2>
+  <ol class="steps">
+    <li><b>Layout.</b> Hall 406 is built by <code>createHall406()</code>; a custom venue's shapes are converted by <code>rasterize()</code>. Both produce the same layout object: a grid of cell types + named openings + metadata.</li>
+    <li><b>Compile.</b> <code>compile()</code> derives passable cells, seat cells, standing cells and groups of door/exit cells with their widths.</li>
+    <li><b>Simulation.</b> The controller creates <code>new Simulation(layout, params)</code>: agents placed on seats (seeded random shuffle), Dijkstra fields computed for every open exit.</li>
+    <li><b>Loop.</b> Each animation frame the controller calls <code>step()</code> one or more times (depending on 1×–8× speed). Each step = 0.1 s of simulated time.</li>
+    <li><b>Views.</b> The 2D plan, 3D view, KPIs and charts read positions, states, density and exit counters from the same object — so they can never disagree.</li>
+    <li><b>Summary.</b> When everyone is out (or 600 s pass), <code>summary()</code> returns every number shown in the UI: RSET, t50, t95, peak density, exit counts, bottlenecks, curve, per-agent outcomes. <code>analyzeRisk()</code> turns it into findings.</li>
+    <li><b>What-if.</b> Recommendations serialize the layout variants and send them to Web Workers, which run <code>runHeadless()</code> and post results back for ranking.</li>
+    <li><b>Persist.</b> Reports go to localStorage; venues to IndexedDB.</li>
+  </ol>
+
+  <h2><span class="n">7.2</span>How the AI path works</h2>
+  <p>Browser panel → <code>POST /api/assistant/chat</code> with the conversation + a JSON snapshot of the app state → our Node handler adds the system prompt (EvacPrint facts, safety rules) and tool definitions → Gemini streams back text and/or a <em>function call</em> (e.g. <code>what_if</code>) → the browser shows a confirmation card for actions that change anything → on Confirm, the browser executes the tool on a copy and sends the result back → Gemini explains the result. The API key never leaves the server.</p>
+
+  <h2><span class="n">7.3</span>Repository map</h2>
+  <table class="compact plain">
+    <thead><tr><th style="width:52mm">Folder / file</th><th>Contents</th></tr></thead>
+    <tbody>
+      <tr><td><code>src/sim/</code></td><td>engine, pathfinding (Dijkstra), layout (Hall 406, candidates), scenarios, recommend, risk, worker, batch, controller, rng</td></tr>
+      <tr><td><code>src/render/</code></td><td>floorplan (2D), view3d (Three.js), iso, charts, colors</td></tr>
+      <tr><td><code>src/pages/</code></td><td>overview, simulator, view3dPage, venues, venueEditor, howItWorks, technology, learn, reports, profile, welcome, auth</td></tr>
+      <tr><td><code>src/venue/</code></td><td>model (shapes → grid, profiles), editor, capture, importers, quickbuild, wizard, store</td></tr>
+      <tr><td><code>src/assistant/</code></td><td>assistant panel, api client, context snapshot, tools, offline guide</td></tr>
+      <tr><td><code>src/learn/</code>, <code>src/ui/</code>, <code>src/auth/</code>, <code>src/reports/</code></td><td>explainers, labs, player; nav, icons, dialogs, illustrations; demo auth; report storage</td></tr>
+      <tr><td><code>server/</code></td><td>index.mjs (production server), assistant.mjs (API routes), gemini.mjs (Gemini client)</td></tr>
+      <tr><td><code>scripts/</code></td><td>sim-check.mjs (regression test), render-illustrations.mjs</td></tr>
+      <tr><td><code>illustrations/</code></td><td>7 engine-generated SVG illustrations</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- =============================================================== 8. ALGORITHMS -->
+<section class="chapter" id="c8">
+  <div class="ch-head" data-short="08 · Algorithms">
+    <div class="ch-num">Chapter 08</div>
+    <h1>Algorithms explained</h1>
+    <p>What each algorithm is, why we need it, how it works, where it lives, and an everyday example.</p>
+  </div>
+
+  <table class="compact">
+    <thead><tr><th style="width:58mm">Algorithm asked about</th><th style="width:30mm">In EvacPrint?</th><th>Where / note</th></tr></thead>
+    <tbody>
+      <tr><td>Dijkstra's shortest path</td><td><span class="pill ok">Yes — core</span></td><td>Multi-source Dijkstra distance fields, <code>pathfinding.js</code></td></tr>
+      <tr><td>Agent-based simulation</td><td><span class="pill ok">Yes — core</span></td><td><code>engine.js</code></td></tr>
+      <tr><td>Density-based slowdown</td><td><span class="pill ok">Yes</span></td><td>Weidmann (1993) speed–density relation</td></tr>
+      <tr><td>Door capacity</td><td><span class="pill ok">Yes</span></td><td>Token-bucket gates, 1.33 p/s per metre</td></tr>
+      <tr><td>Crowd distribution / placement</td><td><span class="pill ok">Yes</span></td><td>Seeded shuffle of seats, standing cells, wheelchair bays; spawn areas in Venue Studio</td></tr>
+      <tr><td>Bottleneck detection</td><td><span class="pill ok">Yes</span></td><td>Threshold + exposure time + connected components</td></tr>
+      <tr><td>Heatmap generation</td><td><span class="pill ok">Yes</span></td><td>Gaussian kernel density estimate + smoothing</td></tr>
+      <tr><td>Recommendation logic</td><td><span class="pill ok">Yes</span></td><td>Candidate generation + multi-seed re-simulation + ranking</td></tr>
+      <tr><td>Breadth-First Search (BFS)</td><td><span class="pill future">Not used</span></td><td>Dijkstra is used because diagonal steps and congestion make costs unequal. (Flood fill with a stack is used to group bottleneck cells and to fill enclosed floor areas.)</td></tr>
+      <tr><td>A* search</td><td><span class="pill future">Not used</span></td><td>A* finds one path for one person. We need distances from every cell to every exit at once, which a single multi-source Dijkstra provides.</td></tr>
+    </tbody>
+  </table>
+
+  <h2><span class="n">8.1</span>Grid conversion (digitising the venue)</h2>
+  <p><strong>What:</strong> the venue becomes a grid of 0.5 m × 0.5 m cells, each typed as outside, floor, wall, seat, obstacle, door, exit or stage. <strong>Why:</strong> every later computation (paths, density, 3D extrusion) needs a common, discrete map. <strong>Where:</strong> <code>createHall406()</code> in <code>layout.js</code>; <code>rasterize()</code> in <code>model.js</code> for custom venues. <strong>Example:</strong> like turning a photo into pixels — the plan becomes a mosaic where each tile says what is there. Hall 406 is a 52 × 39 cell grid.</p>
+
+  <h2><span class="n">8.2</span>Multi-source Dijkstra distance field</h2>
+  <div class="two">
+    <div>
+      <p><strong>What:</strong> Dijkstra's algorithm finds the lowest-cost path in a graph. We run it "backwards" from every cell of an exit at once (multi-source), so the result is a <em>map</em> giving every cell's cost to reach that exit.</p>
+      <p><strong>Why:</strong> 200 people need routes simultaneously. One map per exit answers "which way, and how far?" for everyone in one pass.</p>
+      <p><strong>How:</strong> start with the exit cells at cost 0 in a min-heap. Repeatedly take the cheapest unsettled cell and relax its 8 neighbours: straight step 0.5 m, diagonal 0.5·√2 ≈ 0.71 m — diagonals only if both side cells are open (no corner cutting). Cells next to walls cost ×1.25, so people keep a little distance from walls. Every 2 s the costs are multiplied by a congestion factor (1 + 0.45·density), so routes bend away from queues.</p>
+      <p><strong>Use:</strong> each agent walks "downhill" along the field's gradient (interpolated between cells for smooth motion).</p>
+    </div>
+    <figure style="margin-top:0"><img src="../../illustrations/05-dijkstra.svg" alt="Dijkstra illustration"><figcaption><b>Engine-generated illustration.</b> Numbers are costs computed by EvacPrint's own Dijkstra routine; the path follows decreasing cost.</figcaption></figure>
+  </div>
+  <div class="box"><span class="t">Real-world example</span>Think of the exit as the bottom of a valley and the cost map as the height of the land. Water poured anywhere flows downhill to the exit. Agents are the water. A queue at a door is like a pile of sand that raises the land there, so new water finds another valley.</div>
+<pre><span class="c">// simplified from src/sim/pathfinding.js</span>
+<span class="k">function</span> distanceField(grid, exitCells, congestion, wallPenalty) {
+  dist = Infinity for every cell;  heap = MinHeap()
+  <span class="k">for</span> (c of exitCells) { dist[c] = 0; heap.push(0, c) }
+  <span class="k">while</span> (heap not empty) {
+    [d, c] = heap.pop();  <span class="k">if</span> (d > dist[c]) <span class="k">continue</span>      <span class="c">// stale entry</span>
+    <span class="k">for</span> (n of 8 neighbours of c that are passable) {
+      <span class="k">if</span> (diagonal and a side cell is blocked) <span class="k">continue</span> <span class="c">// no corner cutting</span>
+      step = (diagonal ? 0.5*√2 : 0.5) * congestion[n] * wallPenalty[n]
+      <span class="k">if</span> (d + step < dist[n]) { dist[n] = d + step; heap.push(dist[n], n) }
+    }
+  }
+  <span class="k">return</span> dist   <span class="c">// metres-equivalent cost from every cell to this exit</span>
+}</pre>
+
+  <h2><span class="n">8.3</span>Exit choice with hysteresis</h2>
+  <p>Each moving agent compares the cost of every open exit from its current cell and picks the lowest. To stop people flip-flopping between two doors, it only switches if the new exit is clearly better: at least 15 % cheaper and 1.5 m shorter (<code>chooseExit()</code>). In Venue Studio, wheelchair users ignore exits marked not step-free (if an accessible one is reachable), and occupants unfamiliar with the building add a 4–18 m penalty to every exit except the main entrance (smaller penalty with good signage). <strong>Example:</strong> you will not walk to a farther door just because it is 20 cm shorter, but you will if the near door has a long queue.</p>
+
+  <h2><span class="n">8.4</span>Agent-based modelling (ABM)</h2>
+  <div class="two">
+    <div>
+      <p><strong>What:</strong> instead of treating the crowd as a fluid, every person is a separate "agent" with their own properties and state.</p>
+      <p><strong>Properties:</strong> free walking speed (adults 1.34 ± 0.15 m/s, clipped 1.0–1.6; reduced mobility and wheelchair 0.7–1.0 m/s), body radius (0.22 m adult, 0.23 m reduced mobility, 0.36 m wheelchair), reaction time (default 10–30 s), target exit, category.</p>
+      <p><strong>States:</strong> <em>Waiting</em> (reacting to the alarm) → <em>Moving</em> (walking or queuing) → <em>Evacuated</em> (exit time logged), or <em>Trapped</em> if no exit is reachable.</p>
+      <p><strong>Why:</strong> individual differences (a slow person in a narrow aisle) create the real-world effects we want to measure.</p>
+    </div>
+    <figure style="margin-top:0"><img src="../../illustrations/06-agent-based-model.svg" alt="Agent-based model illustration"><figcaption><b>Each agent carries its own state</b> — reaction, walking, queuing, evacuated.</figcaption></figure>
+  </div>
+
+  <h2><span class="n">8.5</span>Movement: speed–density + relaxation</h2>
+  <p>Every 0.1 s each moving agent: (1) reads the direction from its exit's field; (2) measures the crowd density around it (excluding its own contribution); (3) computes desired speed = free speed × Weidmann factor (never below 6 % so nobody freezes completely); (4) adjusts its velocity smoothly towards the desired one with a 0.5 s relaxation time, like a person accelerating rather than teleporting. Under panic, desired speed is multiplied by (1 + 0.3 × panic).</p>
+
+  <h2><span class="n">8.6</span>Collision resolution</h2>
+  <p>People are discs that may not overlap. After moving, agents are put into grid "buckets"; for each nearby pair that overlaps, both are pushed apart (moving agents more than seated/waiting ones). This is done in <strong>three passes</strong> per step (Gauss–Seidel style) so bodies stay separated and densities saturate near the physical limit. Agents are also pushed out of walls and furniture. <strong>Example:</strong> like marbles in a tray — shaking them makes them settle without overlapping.</p>
+
+  <h2><span class="n">8.7</span>Door capacity: token-bucket gates</h2>
+  <p>Each door/exit has a "bucket" that refills at <em>width × 1.33</em> tokens per second (SFPE specific flow) and holds at most 1 token. An agent stepping into an opening it has not passed yet needs a token; if none is available, it steps back and waits (shown red, counted in the queue). <strong>Example:</strong> a turnstile that lets one person through every 0.75 s for a 1 m door. Doubling the width doubles the refill rate.</p>
+  <p><strong>Faster-is-slower (panic clogging):</strong> when panic &gt; 0 and the density in front of the door exceeds 2.5 p/m², the refill rate is reduced by up to 45 % × panic — a simplified (phenomenological) version of the clogging effect described by Helbing et al. (2000): rushing crowds jam doors.</p>
+
+  <h2><span class="n">8.8</span>Density estimation and the heatmap</h2>
+  <p>For every moving agent, the engine adds a small Gaussian "bump" (radius R = 0.7 m, total volume 1 person) to the cells around it. Summing all bumps gives a smooth density field in persons/m². This is smoothed over time with a 1 s exponential moving average so the heatmap does not flicker, and each cell's highest value ("peak map") is kept for the end-of-run heatmap. Colours follow Fruin's walkway levels of service: Low &lt; 1.08, Moderate 1.08–2.15, High 2.15–4.0, Critical ≥ 4.0 p/m².</p>
+
+  <h2><span class="n">8.9</span>Bottleneck detection</h2>
+  <div class="two">
+    <div>
+      <ol>
+        <li><strong>Threshold:</strong> every step, a cell whose smoothed density is ≥ 2.15 p/m² (LOS F) accumulates "exposure" seconds.</li>
+        <li><strong>Group:</strong> after the run, cells with ≥ 3 s of exposure are grouped into connected zones (8-neighbour flood fill); zones smaller than 2 cells are ignored.</li>
+        <li><strong>Describe:</strong> each zone gets its area, peak density, total exposure (cell·seconds) and a name from the nearest landmark ("Door C approach").</li>
+        <li><strong>Rank:</strong> by exposure × peak — long-lasting <em>and</em> severe crowding first.</li>
+      </ol>
+      <p>Live markers during the run use the same grouping on the <em>current</em> smoothed density (cells now ≥ 2.15 p/m²), without the 3-second rule.</p>
+    </div>
+    <figure style="margin-top:0"><img src="../../illustrations/07-bottleneck-detection.svg" alt="Bottleneck detection illustration"><figcaption><b>Bottleneck detection pipeline</b> — threshold, group, keep ≥ 3 s, rank by exposure × peak.</figcaption></figure>
+  </div>
+
+  <h2><span class="n">8.10</span>Recommendation engine</h2>
+  <ol>
+    <li><strong>Baseline:</strong> run the current layout on 3 seeds (seed, seed+1, seed+2).</li>
+    <li><strong>Generate candidates from the layout itself:</strong> unblock each closed opening; widen each door/exit by 1 m; Hall 406 design options (add a 1 m west emergency exit, relocate the AV console, widen centre aisles to 1.5 m, shorten the stage); remove the rear seat row. Custom venues also get: an extra exit on the wall farthest from existing exits, moving obstacles near openings, new aisles, step-free exits, re-opened routes.</li>
+    <li><strong>Re-simulate</strong> every candidate on the same 3 seeds (same people, same seats, same reaction times) in Web Workers.</li>
+    <li><strong>Compare:</strong> for each seed, seconds saved = baseline RSET − candidate RSET.</li>
+    <li><strong>Rank</strong> by mean seconds saved. Mark "Helps on every seed" only if the minimum saving &gt; 0 and the mean ≥ 1.5 s; otherwise "Within run-to-run noise". Flag changes that target the worst bottleneck; attach a trade-off note.</li>
+  </ol>
+  <div class="box teal"><span class="t">Why three seeds?</span>A single run can be lucky. Using the same three random populations for every option is a fair A/B test: the only difference between runs is the design change. The seeded random generator (mulberry32) makes every run reproducible.</div>
+
+  <h2><span class="n">8.11</span>Risk-analysis rules</h2>
+  <p>After a run, <code>analyzeRisk()</code> applies transparent rules to the measured result: density zones (high if peak ≥ 4 p/m²), exits whose peak 5-second discharge reaches ≥ 85 % of capacity with ≥ 10 users, closed openings and hazard zones, narrow busy passages (&lt; 1.2 m), unbalanced exit use (one exit carrying &gt; 1.6× its fair share), wheelchair users stuck or among the last 10 % out, people not evacuated, longest travel distance vs a 45 m reference, and delayed areas (mean exit time &gt; 1.35× overall).</p>
+
+  <h2><span class="n">8.12</span>Other algorithms in the codebase</h2>
+  <ul>
+    <li><strong>Seeded pseudo-random generator (mulberry32)</strong> — reproducible populations.</li>
+    <li><strong>Box–Muller normal sampling</strong> for walking speeds (<code>rng.normal</code>), clipped to plausible ranges.</li>
+    <li><strong>Threshold wall tracing</strong> on calibrated plan images: dark-ink fraction or line-crossing tests per cell, plus a thinning pass.</li>
+    <li><strong>Flood fill</strong> to turn traced walls into an enclosed floor area (without leaking through door gaps up to about 2 m).</li>
+    <li><strong>DXF parsing</strong> of LINE, LWPOLYLINE, POLYLINE and ARC entities into wall segments using the file's unit code.</li>
+    <li><strong>Quick-room layout generator</strong> — places seating blocks with side and centre aisles and spreads exits evenly along the free stretches of each wall.</li>
+  </ul>
+</section>
+
+<!-- =============================================================== 9. MATHS -->
+<section class="chapter" id="c9">
+  <div class="ch-head" data-short="09 · Mathematics">
+    <div class="ch-num">Chapter 09</div>
+    <h1>The mathematics</h1>
+    <p>Only formulas that are actually in the code. Each comes with variables, units and a worked example.</p>
+  </div>
+
+  <div class="formula"><div class="fx">v(ρ) = v₀ · [ 1 − e<sup>−γ (1/ρ − 1/ρ<sub>max</sub>)</sup> ]<small>WEIDMANN (1993) SPEED–DENSITY · engine.js weidmannFactor()</small></div><div class="fb">
+    <p><b>v</b> walking speed (m/s) · <b>v₀</b> the agent's free speed (m/s) · <b>ρ</b> local density (persons/m²) · <b>γ</b> = 1.913 (dimensionless fit constant) · <b>ρ<sub>max</sub></b> = 5.4 p/m² (density at which walking stops). For ρ ≤ 0.05 the factor is 1; for ρ ≥ 5.4 it is 0; the engine never lets it drop below 0.06.</p>
+    <p><b>Effect:</b> the denser it gets, the slower everyone walks — which is why queues form and grow.</p>
+    <div class="ex"><b>Example:</b> v₀ = 1.34 m/s, ρ = 2.15 p/m² → 1/2.15 − 1/5.4 = 0.465 − 0.185 = 0.280 → e<sup>−1.913 × 0.280</sup> = e<sup>−0.536</sup> = 0.585 → factor = 0.415 → v = 1.34 × 0.415 ≈ <b>0.56 m/s</b>. At the start of LOS F, people already walk at less than half their normal speed (the Technology page marks this point).</div>
+  </div></div>
+
+  <div class="formula"><div class="fx">Q = q<sub>s</sub> · W ,   q<sub>s</sub> = 1.33 persons / (s·m)<small>DOOR DISCHARGE CAPACITY (SFPE SPECIFIC FLOW) · gateRate = widthM × specificFlow</small></div><div class="fb">
+    <p><b>Q</b> maximum flow through an opening (persons/s) · <b>q<sub>s</sub></b> specific flow · <b>W</b> clear width (m).</p>
+    <div class="ex"><b>Example:</b> Door C is 1.0 m → Q = 1.33 p/s, i.e. one person every 0.75 s. In the Normal run 78 people used Door C, so even with no walking at all the door needs at least 78 ÷ 1.33 ≈ <b>59 s</b> of discharge. Widening it to 2.0 m doubles Q to 2.66 p/s. Lobby exit and North fire stair (2.0 m) = 2.66 p/s; West stair (1.5 m) = 2.00 p/s.</div>
+  </div></div>
+
+  <div class="formula"><div class="fx">ρ(c) = Σ<sub>agents</sub> (1 / πR²) · e<sup>−d²/R²</sup> ,   R = 0.7 m<small>GAUSSIAN-KERNEL LOCAL DENSITY · engine.js (Helbing, Johansson &amp; Al-Abideen 2007)</small></div><div class="fb">
+    <p><b>ρ(c)</b> density at cell centre c (persons/m²) · <b>d</b> distance from the agent to the cell centre (m) · <b>R</b> kernel radius (m). Each agent contributes a smooth bump that integrates to 1 person.</p>
+    <div class="ex"><b>Example:</b> one agent standing exactly on a cell centre contributes 1/(π × 0.49) ≈ <b>0.65 p/m²</b> to that cell. When computing its own speed, the engine subtracts about 0.55 so a person is not slowed by themselves.</div>
+  </div></div>
+
+  <div class="formula"><div class="fx">ρ̄ ← ρ̄ + (ρ − ρ̄) · (1 − e<sup>−Δt/τ</sup>) ,   Δt = 0.1 s, τ = 1 s<small>EXPONENTIAL SMOOTHING OF DENSITY (heatmap, routing, bottlenecks)</small></div><div class="fb">
+    <p>Each step moves the smoothed value ρ̄ about 9.5 % of the way towards the instantaneous value ρ — like a 1-second "memory". Prevents flicker and one-frame false alarms.</p>
+  </div></div>
+
+  <div class="formula"><div class="fx">cost multiplier = 1 + k · ρ̄ ,   k = 0.45 · (1 − 0.7 · panic)<small>CONGESTION-AWARE ROUTING · updateFields() every 2 s</small></div><div class="fb">
+    <p>Cells with crowds become "more expensive" in the Dijkstra field, so agents may re-route to a less busy exit. Panicked crowds re-route less (k smaller).</p>
+    <div class="ex"><b>Example:</b> panic 0.2 → k = 0.45 × 0.86 = 0.387. A cell at 4 p/m² costs 1 + 0.387 × 4 = <b>2.55×</b> a free cell.</div>
+  </div></div>
+
+  <div class="formula"><div class="fx">v ← v + (v<sub>des</sub> − v) · Δt / τ ,   τ = 0.5 s;   x ← x + v · Δt<small>FIRST-ORDER RELAXATION (ACCELERATION) AND POSITION UPDATE</small></div><div class="fb">
+    <p><b>v<sub>des</sub></b> = direction × v₀ × (1 + 0.3·panic) × Weidmann factor. With Δt/τ = 0.2, each step closes 20 % of the gap between current and desired velocity.</p>
+    <div class="ex"><b>Example:</b> standing still (v = 0) with v<sub>des</sub> = 1.34 m/s → after 1 step 0.27 m/s, after 5 steps (0.5 s) ≈ 0.90 m/s, after 1 s ≈ 1.20 m/s.</div>
+  </div></div>
+
+  <div class="formula"><div class="fx">t<sub>react</sub> = [ r<sub>min</sub> + (r<sub>max</sub> − r<sub>min</sub>) · ū ] · (1 − 0.35·panic) · m<sub>profile</sub><small>PRE-MOVEMENT (REACTION) TIME · ū = average of two uniform randoms</small></div><div class="fb">
+    <p>Default r<sub>min</sub> = 10 s, r<sub>max</sub> = 30 s. Averaging two random numbers makes middle values more likely than extremes. Reduced-mobility and wheelchair users get m = 1.15 by default; the wizard sets profile-specific multipliers (e.g. staff 0.5, seniors 1.2).</p>
+    <div class="ex"><b>Example:</b> ū = 0.5, panic 0.2 → (10 + 20 × 0.5) × 0.93 = <b>18.6 s</b> before this adult starts moving.</div>
+  </div></div>
+
+  <div class="formula"><div class="fx">clog = 1 − 0.45 · panic · clamp( (ρ<sub>front</sub> − 2.5) / 2.5 , 0, 1 )<small>FASTER-IS-SLOWER DOOR CLOGGING · multiplies the door's token refill rate</small></div><div class="fb">
+    <p><b>ρ<sub>front</sub></b> = highest density within 1 m in front of the opening.</p>
+    <div class="ex"><b>Example:</b> panic 0.3, ρ<sub>front</sub> = 5 p/m² → clog = 1 − 0.45 × 0.3 × 1 = 0.865 → a 1 m door drops from 1.33 to <b>1.15 p/s</b>.</div>
+  </div></div>
+
+  <div class="formula"><div class="fx">RSET = t<sub>exit</sub>(last person) ;   t<sub>50</sub>, t<sub>95</sub> = 50th / 95th percentile of exit times<small>EVACUATION TIME · summary()</small></div><div class="fb">
+    <p>RSET (Required Safe Escape Time, as used in fire engineering) is <em>measured</em>, not calculated by a formula: the engine logs every person's exit time; RSET is the largest. If someone is still inside at the 600 s limit, RSET is reported as incomplete. Also reported: mean walking time and mean queuing time.</p>
+    <div class="ex"><b>Example (Normal):</b> RSET = 93.6 s, t<sub>95</sub> = 88.6 s. The last 5 % (10 people) took 5 extra seconds — typically the people stuck at the back of the Door A and Door C queues.</div>
+  </div></div>
+
+  <div class="formula"><div class="fx">share = n<sub>exit</sub> / N ;  peak flow = max<sub>5-s bins</sub>(passes) / 5 ;  utilisation = peak flow / Q<small>EXIT UTILISATION · summary() and risk.js</small></div><div class="fb">
+    <div class="ex"><b>Example (Normal):</b> Door C: 78 of 200 people → 39 % share; peak flow 1.20 p/s ÷ 1.33 = <b>90 %</b> utilisation → flagged "operating at capacity". A 5-s bin can briefly show slightly more than capacity (e.g. 1.40 of 1.33) because the gate can hold one stored token.</div>
+  </div></div>
+
+  <div class="formula"><div class="fx">exposure(zone) = Σ<sub>cells</sub> seconds at ρ̄ ≥ 2.15 ;   area-time (m²·s) = cell·s × 0.25<small>BOTTLENECK SEVERITY · rank = exposure × peak density</small></div><div class="fb">
+    <div class="ex"><b>Example (Normal):</b> B1 Door C approach: peak 6.00 p/m², 1656 cell·s → 6.00 × 1656 = 9936; B2 Door A approach: 5.33 × 1849 = 9855 → Door C ranks first.</div>
+  </div></div>
+
+  <div class="formula"><div class="fx">Δ<sub>i</sub> = RSET<sub>base,i</sub> − RSET<sub>change,i</sub> (i = 1..3) ;  significant ⇔ min Δ<sub>i</sub> &gt; 0 and mean Δ<sub>i</sub> ≥ 1.5 s<small>RECOMMENDATION RANKING · recommend.js rank()</small></div><div class="fb">
+    <div class="ex"><b>Example (Normal):</b> "Add a 1.0 m emergency exit on the west wall" saved 10.5 to 22.2 s across the 3 seeds, mean 17.3 s → consistent. "Shorten the stage" ranged −3.7 to +8.4 s → within noise, even though its mean (2.8 s) equals "widen Door C".</div>
+  </div></div>
+
+  <div class="formula"><div class="fx">Diagonal step = 0.5 · √2 ≈ 0.707 m ;  wall-adjacent cell cost × 1.25<small>GRID GEOMETRY · pathfinding.js</small></div><div class="fb">
+    <p>Straight moves cost 0.5 m (one cell). The wall penalty makes routes keep a little distance from walls, as people do.</p>
+  </div></div>
+
+  <div class="box amber"><span class="t">A sanity check you can do on a whiteboard (not used by the engine)</span>
+    Lower bound for one door: <strong>t ≳ reaction time + people ÷ door flow</strong>. For the Normal run, Door A carried 84 people: 84 ÷ 1.33 ≈ 63 s of pure discharge, plus ≈ 10–30 s of reaction — so about 75–95 s is plausible, and the engine measured 93.6 s for the whole hall. This hand estimate is only a cross-check; the simulation adds walking, queuing, route choice and interaction.
+  </div>
+</section>
